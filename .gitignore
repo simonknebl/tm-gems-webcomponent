@@ -1,13 +1,12 @@
 /node_modules/
 custom-elements.json
-# only generated for size check
-my-element.bundled.js
 
 ### Workflow & Editor ###
 .idea
 .vscode
 .eslintcache
 .stylelintcache
+.eslintrc.json
 stats.json
 
 ### Node ###

@@ -67,7 +67,7 @@ export class TMGems extends LitElement {
                 type: Number,
                 attribute: 'gem-width',
             },
-            gemMinWidth:{
+            gemMinWidth: {
                 type: Number,
                 attribute: 'gem-min-width'
             },
@@ -109,7 +109,7 @@ export class TMGems extends LitElement {
         this.gemWidth = 2.4;
         this.gemMinWidth = 30;
         this.gemDifference = 0.5;
-        this.gemDelay = 300;
+        this.gemDelay = 250;
         this.gemLife = 4000;
         this._gems = {
             active: false,
@@ -138,6 +138,7 @@ export class TMGems extends LitElement {
         super.connectedCallback();
         document.addEventListener('pointerdown', this._startgems);
         document.addEventListener('pointerup', this._stopgems);
+        document.addEventListener('dragstart', this._stopgems);
 
         if (this._isTouchDevice()) {
             document.addEventListener('touchend', this._stopgems);
@@ -186,6 +187,15 @@ export class TMGems extends LitElement {
     _isTouchDevice() {
         return 'ontouchstart' in window || navigator.maxTouchPoints;
     }
+    _isSelected() {
+        const selection = () => {
+            if (window.getSelection)
+                return window.getSelection();
+        }
+
+        return !selection().isCollapsed;
+
+    }
 
     _getGemSize(gDiff) {
 
@@ -209,7 +219,7 @@ export class TMGems extends LitElement {
 
         let gSize = Math.abs(Math.min(Math.max(d * gDiff * adjust / 100, gMin), gMax));
 
-        if (gSize < this.gemMinWidth){
+        if (gSize < this.gemMinWidth) {
 
             d = this.gemMinWidth / gDiff * 100;
             gSize = Math.abs(Math.min(Math.max(d * gDiff * adjust / 100, gMin), gMax));
@@ -227,13 +237,19 @@ export class TMGems extends LitElement {
 
         this.pause = setTimeout(() => {
 
-            this._gems.asset = this._random(0, this.assets.gems.length-1);
-            this._gems.active = true;
+            let selection = this._isSelected();
 
-            if (this._isTouchDevice()) {
-                document.addEventListener('touchmove', this._drawgemsTouch);
-            } else {
-                document.addEventListener('pointermove', this._drawgemsPointer);
+            if (!selection) {
+
+                this._gems.asset = this._random(0, this.assets.gems.length - 1);
+                this._gems.active = true;
+
+                if (this._isTouchDevice()) {
+                    document.addEventListener('touchmove', this._drawgemsTouch);
+                } else {
+                    document.addEventListener('pointermove', this._drawgemsPointer);
+                }
+
             }
 
         }, this.gemDelay)
@@ -257,11 +273,12 @@ export class TMGems extends LitElement {
 
     _drawgemsPointer = (e) => {
 
+        e.preventDefault();
         this._drawgems(e.clientX, e.clientY);
 
     }
 
-    _drawgems(clientX,clientY){
+    _drawgems(clientX, clientY) {
 
         // CHECK FOR ADJACENT GEMS
 
